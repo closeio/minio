@@ -1,6 +1,9 @@
 version: 2.1
 jobs:
   build:
+    context:
+      - docker-hub-creds-rw
+
     machine:
       image: ubuntu-2004:202101-01
     working_directory: ~/minio
