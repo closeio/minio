@@ -1,0 +1,34 @@
+version: 2.1
+jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202101-01
+    working_directory: ~/minio
+
+    steps:
+      - checkout
+
+      - run:
+          name: build minio image
+          command: docker-compose build minio
+
+      - run:
+          name: Push the image to docker hub
+          environment:
+            PROJECT: minio
+            PROJECT_NAMESPACE: closeio
+          command: |
+            PROJECT_VSN="$CIRCLE_BRANCH"
+            PROJECT_SHA="$CIRCLE_SHA1"
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            # tag and push both minio:main and minio:<sha1>
+            docker tag "${PROJECT}_minio" "${PROJECT_NAMESPACE}/${PROJECT}:branch-${PROJECT_VSN}"
+            docker tag "${PROJECT}_minio" "${PROJECT_NAMESPACE}/${PROJECT}:${PROJECT_SHA}"
+            docker push "${PROJECT_NAMESPACE}/${PROJECT}:branch-${PROJECT_VSN}"
+            docker push "${PROJECT_NAMESPACE}/${PROJECT}:${PROJECT_SHA}"
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
